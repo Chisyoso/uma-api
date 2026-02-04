@@ -49,7 +49,7 @@ app.get("/card", async (req, res) => {
 
     // Canvas
     const width = 600;
-    const height = 900;
+    const height = 700;
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext("2d");
 
