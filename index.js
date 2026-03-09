@@ -35,7 +35,7 @@ ctx.fillRect(0,0,width,height);
 ctx.fillStyle="#38bdf8";
 ctx.font="bold 70px Arial";
 ctx.textAlign="center";
-ctx.fillText("RANKED TEAM LEADERBOARD",width/2,90);
+ctx.fillText("RANKED E.M",width/2,90);
 
 ctx.textAlign="left";
 
