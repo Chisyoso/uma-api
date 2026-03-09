@@ -1,15 +1,23 @@
-const express=require("express");const{createCanvas}=require("canvas");const app=express();
+const express=require("express");const{createCanvas,loadImage}=require("canvas");const app=express();
 
-function parseRank(rank){
-if(!rank)return "Rookie";
-if(rank.includes("1445504641931546634"))return "Bronze";
-if(rank.includes("1445504694653812767"))return "Silver";
-if(rank.includes("1445504758172487841"))return "Gold";
-if(rank.includes("1445504812849303603"))return "Diamond";
-return "Unranked";
+function getEmojiURL(rank){
+if(!rank)return null;
+const match=rank.match(/:(\d+)>/);
+if(!match)return null;
+return `https://cdn.discordapp.com/emojis/${match[1]}.png`;
 }
 
-app.get("/leaderboard",(req,res)=>{
+async function drawCircleImage(ctx,img,x,y,size){
+ctx.save();
+ctx.beginPath();
+ctx.arc(x+size/2,y+size/2,size/2,0,Math.PI*2);
+ctx.closePath();
+ctx.clip();
+ctx.drawImage(img,x,y,size,size);
+ctx.restore();
+}
+
+app.get("/leaderboard",async(req,res)=>{
 
 const width=1600;
 const height=900;
@@ -36,8 +44,9 @@ let y=170;
 for(let i=1;i<=10;i++){
 
 const team=req.query["team"+i]||"Unknown";
-const elo=parseInt(req.query["elo"+i]||0);
-const rank=parseRank(req.query["rank"+i]);
+const elo=req.query["elo"+i]||"0";
+const rank=req.query["rank"+i]||"";
+const avatar=req.query["avatar"+i];
 
 let bg="#111827";
 let border="#1f2937";
@@ -57,19 +66,28 @@ ctx.fillStyle="#ffffff";
 ctx.font="bold 32px Arial";
 ctx.fillText("#"+i,230,y);
 
+if(avatar){
+try{
+const img=await loadImage(avatar);
+await drawCircleImage(ctx,img,290,y-30,50);
+}catch{}
+}
+
 ctx.font="bold 30px Arial";
-ctx.fillText(team,320,y);
+ctx.fillText(team,360,y);
 
 ctx.fillStyle="#38bdf8";
 ctx.font="28px Arial";
 ctx.fillText("ELO "+elo,900,y);
 
-ctx.fillStyle="#facc15";
-ctx.fillText(rank,1150,y);
+const emojiURL=getEmojiURL(rank);
 
-const barWidth=elo*2;
-ctx.fillStyle="#22c55e";
-ctx.fillRect(320,y+10,Math.min(barWidth,450),6);
+if(emojiURL){
+try{
+const emoji=await loadImage(emojiURL);
+ctx.drawImage(emoji,1150,y-28,40,40);
+}catch{}
+}
 
 y+=70;
 }
